@@ -1,0 +1,6 @@
+#!/bin/bash
+while read I; do if ! grep -q $I ./ordliste -i; 
+then echo $I
+fi
+done
+

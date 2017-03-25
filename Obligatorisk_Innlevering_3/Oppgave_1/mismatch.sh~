@@ -1,0 +1,6 @@
+#!/bin/bash
+while read I; do if ! grep -q $I /home/martin/oblig3/ordliste -i; 
+then echo $I
+fi
+done
+

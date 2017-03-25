@@ -1,0 +1,98 @@
+#!/bin/bash
+chmod +x ./tranvers.sh
+./tranvers.sh /home | sed 's/\(.*\)[/]/\1;/g' > tranverse_output.txt
+
+sqlite3 linux > brukere.txt <<EOS
+	create table if not exists hovedtabell (
+		access_rights integer,
+		bytes_blocks_allocated integer,
+		size_of_blocks integer,
+		device_number text,
+		file_type text,
+		group_id integer,
+		group_name text,
+		hard_links integer,
+		inode_number integer,
+		mount_point text,
+		file_path text,
+		file_name text,
+		IO_transfer_size integer,
+		file_size integer,
+		user_id integer,
+		user_name text);
+.separator ";"
+.import ./tranverse_output.txt hovedtabell
+SELECT DISTINCT user_name, user_ID FROM hovedtabell;
+EOS
+
+sqlite3 linux > filsystem.txt<<EOS
+	create table if not exists brukere (
+		user_name text, 
+		user_ID integer);
+.separator ";"
+.import ./brukere.txt brukere
+SELECT file_name, file_path, inode_number, device_number FROM hovedtabell;
+EOS
+
+sqlite3 linux > groups.txt <<EOS
+	create table if not exists filsystem (
+		file_name text, 
+		file_path text, 
+		inode_number integer, 		
+		device_number);
+.separator ";"
+.import ./filsystem.txt filsystem
+SELECT DISTINCT group_name, group_id FROM hovedtabell;
+EOS
+
+sqlite3 linux > fillokasjon_disk.txt <<EOS
+	create table if not exists groups (
+		group_name text, 
+		group_id integer);
+.separator ";"
+.import ./groups.txt groups
+SELECT inode_number, device_number, file_type, file_size, bytes_blocks_allocated, hard_links, access_rights, user_name, group_name FROM hovedtabell;
+EOS
+
+sqlite3 linux > hardware.txt <<EOS
+	create table if not exists fillokasjon_disk (
+		inode_number integer, 
+		dev_number integer, 
+		file_type text, 
+		file_size integer, 
+		bytes_blocks_allocated integer, 
+		hard_links integer, 
+		access_rights integer, 
+		user_name text, 
+		group_name text);
+.separator ";"
+.import ./fillokasjon_disk.txt fillokasjon_disk
+SELECT DISTINCT device_number, mount_point, IO_transfer_size, size_of_blocks FROM hovedtabell;
+EOS
+
+sqlite3 linux <<EOS
+	create table if not exists hardware (
+		device_number integer, 
+		mount_point text, 
+		IO_transfer_size, 
+		size_of_blocks);
+
+.separator ";"
+.import ./hardware.txt hardware
+EOS
+
+rm ./hardware.txt
+rm ./fillokasjon_disk.txt
+rm ./groups.txt
+rm ./filsystem.txt
+rm ./brukere.txt
+rm ./tranverse_output.txt
+
+
+
+
+
+
+
+
+

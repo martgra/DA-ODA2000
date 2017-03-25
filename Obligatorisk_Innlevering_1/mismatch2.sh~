@@ -1,0 +1,3 @@
+#!/bin/bash
+read -d 'END' -a txt
+grep "${txt[0]}" ./ordliste 

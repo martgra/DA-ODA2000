@@ -1,0 +1,41 @@
+#!/bin/bash
+chmod +x ./tranvers.sh
+./tranvers.sh /home | sed 's/\(.*\)[/]/\1;/g' > tranverse_output.txt
+
+sqlite3 linux > users.txt <<EOS
+	create table if not exists main_table (
+		access_rights integer,
+		bytes_blocks_allocated integer,
+		size_of_blocks integer,
+		device_number text,
+		file_type text,
+		group_id integer,
+		group_name text,
+		hard_links integer,
+		inode_number integer,
+		mount_point text,
+		file_path text,
+		file_name text,
+		IO_transfer_size integer,
+		file_size integer,
+		user_id integer,
+		user_name text);
+.separator ";"
+.import ./tranverse_output.txt main_table
+
+create table if not exists users (
+		user_name text, 
+		user_ID integer, 
+		PRIMARY KEY(user_name));
+
+INSERT OR IGNORE INTO users SELECT DISTINCT user_name, user_ID FROM main_table;
+EOS
+
+
+
+
+
+
+
+
+

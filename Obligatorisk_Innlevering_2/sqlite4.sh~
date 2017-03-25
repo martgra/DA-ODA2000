@@ -1,0 +1,27 @@
+#!/bin/bash
+chmod +x ./tranvers.sh
+./tranvers.sh /home > tranverse_output.txt > sed 's/\(.*\)[/]/\1;/g' > tranverse_output2.txt
+
+sqlite3 linux  <<EOS
+	create table hovedtabell (
+		access_rights integer,
+		bytes_blocks_allocated integer,
+		size_of_blocks integer,
+		device_number text,
+		file_type text,
+		group_id integer,
+		group_name text,
+		hard_links integer,
+		inode_number integer,
+		mount_point text,
+		file_path text,
+		file_name text,
+		IO_transfer_size integer,
+		file_size integer,
+		user_id integer,
+		user_name text);
+.separator ";"
+.import ./tranverse_output2.txt hovedtabell
+SELECT DISTINCT user_name, user_ID FROM hovedtabell;
+EOS
+

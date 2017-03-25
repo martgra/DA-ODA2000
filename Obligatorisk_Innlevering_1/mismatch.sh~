@@ -1,0 +1,4 @@
+#!/bin/bash
+read -d 'END' -a txt
+echo "${txt[@]}"
+
